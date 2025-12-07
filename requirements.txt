@@ -1,0 +1,36 @@
+# Django
+Django==5.2.7
+
+# PostgreSQL database adapter
+psycopg2-binary>=2.9.0
+
+# HTTP requests
+requests>=2.31.0
+
+# PDF processing
+pypdf>=3.0.0
+
+# Pydantic AI agent framework
+pydantic-ai>=0.0.14
+
+# LangGraph for agentic networks
+langgraph>=1.0.0
+
+# Typing extensions for LangGraph
+typing-extensions>=4.8.0
+
+# Google API client libraries
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-api-python-client>=2.100.0
+
+# Testing
+pytest>=8.3.5
+pytest-asyncio>=0.21.0
+
+# Environment variables (from network/pyproject.toml)
+python-dotenv>=1.0.1
+
+# Additional dependencies (for LangGraph testing)
+anyio>=4.7.0
+
