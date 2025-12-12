@@ -2,9 +2,11 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    paths: 
+      - 'fossilite/**'
   pull_request:
-    branches: [ "main" ]
+    paths:
+      - 'fossilite/**'
 
 jobs:
   build:
