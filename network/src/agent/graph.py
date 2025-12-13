@@ -6,7 +6,7 @@ Returns a predefined response. Replace logic and configuration as needed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from langgraph.graph import StateGraph
 from langgraph.runtime import Runtime
@@ -20,7 +20,9 @@ class Context(TypedDict):
     See: https://langchain-ai.github.io/langgraph/cloud/how-tos/configuration_cloud/
     """
 
-    my_configurable_param: str
+    model_name: str
+    user_name: str
+
 
 
 @dataclass
@@ -31,7 +33,8 @@ class State:
     See: https://langchain-ai.github.io/langgraph/concepts/low_level/#state
     """
 
-    changeme: str = "example"
+    messages: list
+    user_personal_info: Optional[dict] = None
 
 
 async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
