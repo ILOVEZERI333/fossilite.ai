@@ -8,9 +8,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict
 
+from states.college_app_state import CollegeAppState as State
 from langgraph.graph import StateGraph
 from langgraph.runtime import Runtime
 from typing_extensions import TypedDict
+from nodes.help_apply import help_apply_async
 
 
 class Context(TypedDict):
@@ -23,32 +25,20 @@ class Context(TypedDict):
     my_configurable_param: str
 
 
-@dataclass
-class State:
-    """Input state for the agent.
+
+async def has_user_done_application(state: State) -> bool:
     
-    Defines the initial structure of incoming data.
-    See: https://langchain-ai.github.io/langgraph/concepts/low_level/#state
-    """
+    
+    if state.user_application_info is None:
+        return False
+    return True
 
-    changeme: str = "example"
-
-
-async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    """Process input and returns output.
-
-    Can use runtime context to alter behavior.
-    """
-    return {
-        "changeme": "output from call_model. "
-        f"Configured with {(runtime.context or {}).get('my_configurable_param')}"
-    }
 
 
 # Define the graph
 graph = (
     StateGraph(State, context_schema=Context)
-    .add_node(call_model)
-    .add_edge("__start__", "call_model")
+    .add_node("help_apply", help_apply_async)
+    .add_conditional_edges("__start__", has_user_done_application)
     .compile(name="New Graph")
 )

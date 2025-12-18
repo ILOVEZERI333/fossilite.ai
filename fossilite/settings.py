@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'vectorizer.apps.VectorizerConfig',
     'agentic_network.apps.AgenticNetworkConfig',
 ]
 
