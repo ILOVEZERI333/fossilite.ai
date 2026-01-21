@@ -12,8 +12,12 @@ from states.college_app_state import CollegeAppState as State
 from langgraph.graph import StateGraph
 from langgraph.runtime import Runtime
 from typing_extensions import TypedDict
-from nodes.help_apply import help_apply_async
-
+from nodes.college_app.help_apply import help_apply_async
+from nodes.college_app.scan_judge_app import scan_judge_app_async
+from nodes.college_app.value_review import values_check_async
+from nodes.general.output_format import output_format_async
+from nodes.general.output_check import output_check_async
+from nodes.college_app.essay_review import essay_review_async
 
 class Context(TypedDict):
     """Context parameters for the agent.
@@ -25,20 +29,6 @@ class Context(TypedDict):
     model_name: str
     user_name: str
 
-
-
-
-async def has_user_done_application(state: State) -> bool:
-    
-    
-    if state.user_application_info is None:
-        return False
-    return True
-
-    messages: list
-    user_personal_info: Optional[dict] = None
-
-
 async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     """Process input and returns output.
 
@@ -49,11 +39,40 @@ async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
         f"Configured with {(runtime.context or {}).get('my_configurable_param')}"
     }
 
+"""
+Conditional edges
+"""
+
+async def has_user_done_application(state: State) -> str:
+    
+    
+    if state.user_application_info is None:
+        return "help_apply"
+    return "scan_judge_application"
+
+    messages: list
+    user_personal_info: Optional[dict] = None
+
+async def does_app_require_essay(state: State) -> str:
+    
+    #if user does not need essay help
+    if state.user_application_info:
+        return "values_check"
+    return "essay_review"
+
+
+
 
 # Define the graph
 graph = (
     StateGraph(State, context_schema=Context)
     .add_node("help_apply", help_apply_async)
+    .add_node("scan_judge_application", scan_judge_app_async)
+    .add_node("values_check", values_check_async)
+    .add_node("output_format", output_format_async)
+    .add_node("output_check", output_check_async)
+    .add_node("essay_review", essay_review_async)
     .add_conditional_edges("__start__", has_user_done_application)
+    .add_conditional_edges("scan_judge_application", does_app_require_essay)
     .compile(name="New Graph")
 )

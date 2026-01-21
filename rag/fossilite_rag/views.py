@@ -51,7 +51,7 @@ def get_model():
     return model
 
 @csrf_exempt
-def prompt_rag(prompt: str) -> str:
+def prompt_rag_application(prompt: str) -> str:
     model = get_model()
     embedding = model.encode([prompt])[0]
     docs = get_rag_docs(6, embedding)
@@ -66,12 +66,13 @@ def prompt_rag(prompt: str) -> str:
     else:
         formatted_context = "No relevant documents found."
 
-    print(formatted_context)
 
-    full_prompt = f"""You are an expert counselor specializing in college applications and helping students with their college applications.
+
+    # full prompt for judging an application
+    full_prompt = f"""You are an expert counselor specializing in college applications and helping students with their college applications. You are given a college application and a set of context documents that may be relevant to the application. You are to review the application and provide a comprehensive review of the application.
 
 ## CONTEXT DOCUMENTS
-The following documents have been retrieved as potentially relevant to answer the question. Documents are ordered by relevance (most relevant first).
+The following documents have been retrieved as potentially relevant to review the application. Documents are ordered by relevance (most relevant first).
 
 {formatted_context}
 
@@ -79,13 +80,13 @@ The following documents have been retrieved as potentially relevant to answer th
 
 **HOW TO USE CONTEXT AND GENERAL KNOWLEDGE:**
 
-1. **When Context is Relevant**: If the context documents contain information that directly answers the question, use that information as your primary source.
+1. **When Context is Relevant**: If the context documents contain information that directly relates to the application, use that information as your primary source.
 
 2. **When Context is Missing or Irrelevant**: 
-   - If the context documents do NOT contain the information needed, you MUST immediately use your general knowledge to answer the question.
+   - If the context documents do NOT contain the information needed, you MUST immediately use your general knowledge to review the application.
    - DO NOT state that "the documents do not contain information" or "the documents do not offer information about X".
-   - DO NOT leave any part of the question unanswered.
-   - You MUST provide a complete, comprehensive answer using your general knowledge.
+   - DO NOT leave any part of the application unreviewed.
+   - You MUST provide a complete, comprehensive review of the application using your general knowledge.
    - Treat this as a REQUIREMENT, not a suggestion.
 
 3. **Combining Sources**: You can seamlessly combine information from context documents with your general knowledge to provide the most complete answer possible.
@@ -96,11 +97,11 @@ The following documents have been retrieved as potentially relevant to answer th
    - Provide a clear, concise answer without repeating information.
    - Organize your response with appropriate headings and formatting.
 
-## QUESTION
+## APPLICATION
 {prompt}
 
 ## RESPONSE
-Provide a complete, comprehensive answer to the question. If the context documents contain relevant information, use it. If they don't, use your general knowledge to provide a thorough answer. Never indicate that information is missing - always provide a complete response."""
+Provide a complete, comprehensive review of the application. If the context documents contain relevant information, use it. If they don't, use your general knowledge to provide a thorough review. Never indicate that information is missing - always provide a complete review."""
 
     response = client.models.generate_content(
         model=GEMINI_MODEL,

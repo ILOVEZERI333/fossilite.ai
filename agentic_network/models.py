@@ -6,6 +6,7 @@ class User(models.Model):
         "MS" : "Middle School",
         "HS" : "High School",
         "CC" : "Community College",
+        "UN" : "University",
     }
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
@@ -14,3 +15,6 @@ class User(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     level = models.CharField(max_length=255, choices=ACADEMIC_LEVELS)
     is_active = models.BooleanField(default=True)
+
+
+

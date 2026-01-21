@@ -1,9 +1,8 @@
-from rag.fossilite_rag.views import prompt_rag
+from rag.fossilite_rag.views import prompt_rag_application
 from langgraph.runtime import Runtime
 from typing import TypedDict, Dict
 from dataclasses import dataclass
 from states.college_app_state import CollegeAppState as State
-
 
 class Context(TypedDict):
     """Context parameters for the agent.
@@ -14,5 +13,15 @@ class Context(TypedDict):
 
     user_prompt: str
 
-async def help_apply_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
-    pass
+    
+
+
+async def obtain_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
+    return await prompt_rag_application(state.user_application_info)
+
+
+
+
+#testing purposes only
+# if __name__ == "__main__":
+#     print(obtain_rag("What is the capital of France?"))

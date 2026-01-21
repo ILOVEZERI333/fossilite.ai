@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'agentic_network.apps.AgenticNetworkConfig',
+    'agentic_network',
+    'rag.fossilite_rag.apps.FossiliteRagConfig',
 ]
 
 MIDDLEWARE = [
