@@ -1,4 +1,4 @@
-from rag.fossilite_rag.views import prompt_rag_application
+from rag.fossilite_rag.views import prompt_cds_rag_application, prompt_college_application_rag_application
 from langgraph.runtime import Runtime
 from typing import TypedDict, Dict
 from dataclasses import dataclass
@@ -16,8 +16,11 @@ class Context(TypedDict):
     
 
 
-async def obtain_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
-    return await prompt_rag_application(state.user_application_info)
+async def obtain_cds_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
+    return await prompt_cds_rag_application(state.user_application_info)
+
+async def obtain_college_application_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
+    return await prompt_college_application_rag_application(state.user_application_info)
 
 
 

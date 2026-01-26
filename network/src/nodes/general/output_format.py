@@ -8,6 +8,7 @@ class Context(TypedDict):
     user_prompt: str
 
 
+#TODO: implement guardrails here for output format
 async def output_format_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
     return {
         "changeme": "output from output_format. "

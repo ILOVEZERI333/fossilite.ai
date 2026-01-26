@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .retrieve import get_rag_docs
+from .retrieve import get_cds_rag_docs
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 from google import genai
@@ -51,10 +51,10 @@ def get_model():
     return model
 
 @csrf_exempt
-def prompt_rag_application(prompt: str) -> str:
+def prompt_cds_rag_application(prompt: str) -> str:
     model = get_model()
     embedding = model.encode([prompt])[0]
-    docs = get_rag_docs(6, embedding)
+    docs = get_cds_rag_docs(6, embedding)
     docs = [doc[2] for doc in docs] # doc[2] is the content of the document
 
     # Format context with clear structure (BEST PRACTICE)

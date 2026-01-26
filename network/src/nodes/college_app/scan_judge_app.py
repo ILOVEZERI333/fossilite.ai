@@ -2,7 +2,7 @@
 from states.college_app_state import CollegeAppState as State
 from typing import TypedDict, Dict
 from langgraph.runtime import Runtime
-from helper.obtain_rag import obtain_rag_async
+from helper.obtain_rag import obtain_cds_rag_async
 
 
 
@@ -18,6 +18,15 @@ async def scan_judge_app_async(state: State, runtime: Runtime[Context]) -> Dict[
         return None
 
 
-    rag_response = await obtain_rag_async(state, runtime)
+    #TODO: verify response from rag is valid
+    rag_response = await obtain_cds_rag_async(state, runtime)
+
+    #assume the response is valid for now
+    score = rag_response.split()[0]
+    feedback = rag_response.split()[1:]
+
+    return (score, feedback)
+
+
 
     

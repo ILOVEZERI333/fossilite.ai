@@ -13,8 +13,22 @@ django.setup()
 
 from django.db import connection
 
+def get_college_application_rag_docs(amount, embedding):
+    if not isinstance(embedding, np.ndarray):
+        embedding = np.array(embedding)
 
-def get_rag_docs(amount, embedding):
+    connection.ensure_connection()
+    register_vector(connection.connection)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT * FROM college_application_documents
+            ORDER BY embedding <-> %s
+            LIMIT %s;
+            """, [embedding, amount])
+        return cursor.fetchall()
+
+
+def get_cds_rag_docs(amount, embedding):
 
     if not isinstance(embedding, np.ndarray):
         embedding = np.array(embedding)
@@ -28,7 +42,7 @@ def get_rag_docs(amount, embedding):
 
         cursor.execute(
             """
-            SELECT * FROM documents
+            SELECT * FROM cds_documents
             ORDER BY embedding <-> %s
             LIMIT %s;
             """, 
@@ -40,7 +54,7 @@ def get_rag_docs(amount, embedding):
 if __name__ == "__main__":
     embedding = np.random.rand(1024).astype(np.float32)
     amount = 10
-    print(get_rag_docs(amount, embedding))
+    print(get_cds_rag_docs(amount, embedding))
 
 
 

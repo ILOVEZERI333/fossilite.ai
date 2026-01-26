@@ -46,7 +46,7 @@ Conditional edges
 async def has_user_done_application(state: State) -> str:
     
     
-    if state.user_application_info is None:
+    if not state.user_application_info:
         return "help_apply"
     return "scan_judge_application"
 
@@ -64,6 +64,7 @@ async def does_app_require_essay(state: State) -> str:
 
 
 # Define the graph
+#TODO: help_apply, scan_judge_application (might be okay), values_check, output_format, output_check, essay_review
 graph = (
     StateGraph(State, context_schema=Context)
     .add_node("help_apply", help_apply_async)
@@ -74,5 +75,6 @@ graph = (
     .add_node("essay_review", essay_review_async)
     .add_conditional_edges("__start__", has_user_done_application)
     .add_conditional_edges("scan_judge_application", does_app_require_essay)
-    .compile(name="New Graph")
+    .compile(name="College Application Graph")
 )
+
