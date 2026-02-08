@@ -16,11 +16,11 @@ class Context(TypedDict):
     
 
 
-async def obtain_cds_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
-    return await prompt_cds_rag_application(state.user_application_info)
+async def obtain_cds_rag_async(state: State, runtime: Runtime[Context], instruction_prompt: str) -> Dict[str, str]:
+    return await prompt_cds_rag_application(state.user_application_info, instruction_prompt)
 
-async def obtain_college_application_rag_async(state: State, runtime: Runtime[Context]) -> Dict[str, str]:
-    return await prompt_college_application_rag_application(state.user_application_info)
+async def obtain_college_application_rag_async(state: State, runtime: Runtime[Context], instruction_prompt: str) -> Dict[str, str]:
+    return await prompt_college_application_rag_application(state.user_application_info, instruction_prompt)
 
 
 

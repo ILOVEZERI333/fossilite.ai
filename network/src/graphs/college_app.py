@@ -18,6 +18,7 @@ from nodes.college_app.value_review import values_check_async
 from nodes.general.output_format import output_format_async
 from nodes.general.output_check import output_check_async
 from nodes.college_app.essay_review import essay_review_async
+from rag.fossilite_rag.views import check_if_essay_required
 
 class Context(TypedDict):
     """Context parameters for the agent.
@@ -55,26 +56,45 @@ async def has_user_done_application(state: State) -> str:
 
 async def does_app_require_essay(state: State) -> str:
     
-    #if user does not need essay help
+    #if user does not need essay help, avoid unnecessary node calls
     if state.user_application_info:
-        return "values_check"
-    return "essay_review"
+
+        #check if app requires essay
+        essay_required = await check_if_essay_required(state.user_application_info) 
 
 
+        if essay_required:
+            return "essay_review"
+        else:
+            return "values_check"
+
+
+    return "values_check"
+
+
+#TODO: implement output validation via LLM call
+async def is_output_valid(state: State) -> str:
+    if state.output_valid:
+        return "output_format"
+    else:
+        return "output_check"
 
 
 # Define the graph
 #TODO: help_apply, scan_judge_application (might be okay), values_check, output_format, output_check, essay_review
 graph = (
     StateGraph(State, context_schema=Context)
-    .add_node("help_apply", help_apply_async)
-    .add_node("scan_judge_application", scan_judge_app_async)
-    .add_node("values_check", values_check_async)
     .add_node("output_format", output_format_async)
     .add_node("output_check", output_check_async)
-    .add_node("essay_review", essay_review_async)
+    .add_node("scan_judge_application", scan_judge_app_async)
+    .add_node("help_apply", help_apply_async)
     .add_conditional_edges("__start__", has_user_done_application)
+    .add_node("values_check", values_check_async)
+    .add_node("essay_review", essay_review_async)
     .add_conditional_edges("scan_judge_application", does_app_require_essay)
+    .add_edge("values_search", "output_format")
+    .add_edge("output_format", "output_check")
+    .add_conditional_edges("output_check", is_output_valid)
     .compile(name="College Application Graph")
 )
 

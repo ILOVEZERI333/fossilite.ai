@@ -50,6 +50,8 @@ def get_cds_rag_docs(amount, embedding):
         return cursor.fetchall()
 
 
+def get_college_application_rag_docs(amount, embedding):
+    pass
 
 if __name__ == "__main__":
     embedding = np.random.rand(1024).astype(np.float32)

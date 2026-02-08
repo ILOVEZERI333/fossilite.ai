@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .retrieve import get_cds_rag_docs
+from .retrieve import get_cds_rag_docs, get_college_application_rag_docs
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 from google import genai
@@ -51,7 +51,39 @@ def get_model():
     return model
 
 @csrf_exempt
-def prompt_cds_rag_application(prompt: str) -> str:
+def check_if_essay_required(prompt: str) -> str:
+
+
+    full_prompt = f"""You are to check if an essay is required for the given pdf of an application. If it is, return True. If it is not, return False. IMPORTANT: If 
+    an application requires an essay, it will be stated in the application. If it does not, it will not be stated in the application. DO NOT make up information.
+    In addition if the pdf does not contain an essay, look at the context documents to see if the application requires an essay. MAKE SURE THAT THE FIRST WORD OF THE RESPONSE IS TRUE OR FALSE."""
+
+    embedding = model.encode([full_prompt])[0]
+    docs = get_cds_rag_docs(6, embedding)
+
+    context = "\n".join([doc[2] for doc in docs])
+
+    full_prompt += f"\n\n## CONTEXT DOCUMENTS\n{context}"
+
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=full_prompt
+    )
+    return response.text.split(" ")[0].lower() == "true"
+
+@csrf_exempt
+def prompt_cds_rag_application(prompt: str, instruction_prompt: str) -> str:
+    """
+    General-purpose function for queries that need CDS documents.
+    
+    Args:
+        prompt: The actual content/query text (e.g., application text, question, etc.)
+        instruction_prompt: The prompt template/instructions that will be formatted with context and prompt.
+                           Should include {formatted_context} and {prompt} placeholders.
+    
+    Returns:
+        The response text from the model.
+    """
     model = get_model()
     embedding = model.encode([prompt])[0]
     docs = get_cds_rag_docs(6, embedding)
@@ -66,42 +98,51 @@ def prompt_cds_rag_application(prompt: str) -> str:
     else:
         formatted_context = "No relevant documents found."
 
+    # Format the instruction prompt with context and prompt content
+    full_prompt = instruction_prompt.format(
+        formatted_context=formatted_context,
+        prompt=prompt
+    )
 
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=full_prompt
+    )
 
-    # full prompt for judging an application
-    full_prompt = f"""You are an expert counselor specializing in college applications and helping students with their college applications. You are given a college application and a set of context documents that may be relevant to the application. You are to review the application and provide a comprehensive review of the application.
+    return response.text
 
-## CONTEXT DOCUMENTS
-The following documents have been retrieved as potentially relevant to review the application. Documents are ordered by relevance (most relevant first).
+@csrf_exempt
+def prompt_college_application_rag_application(prompt: str, instruction_prompt: str) -> str:
+    """
+    General-purpose function for queries that need college application documents.
+    
+    Args:
+        prompt: The actual content/query text (e.g., application text, question, etc.)
+        instruction_prompt: The prompt template/instructions that will be formatted with context and prompt.
+                           Should include {formatted_context} and {prompt} placeholders.
+    
+    Returns:
+        The response text from the model.
+    """
+    model = get_model()
+    embedding = model.encode([prompt])[0]
+    docs = get_college_application_rag_docs(6, embedding)
+    docs = [doc[2] for doc in docs] # doc[2] is the content of the document
 
-{formatted_context}
+    # Format context with clear structure (BEST PRACTICE)
+    if docs:
+        context_sections = []
+        for i, doc_content in enumerate(docs, 1):
+            context_sections.append(f"[Document {i}]\n{doc_content}\n")
+        formatted_context = "\n".join(context_sections)
+    else:
+        formatted_context = "No relevant documents found."
 
-## CRITICAL INSTRUCTIONS - READ CAREFULLY
-
-**HOW TO USE CONTEXT AND GENERAL KNOWLEDGE:**
-
-1. **When Context is Relevant**: If the context documents contain information that directly relates to the application, use that information as your primary source.
-
-2. **When Context is Missing or Irrelevant**: 
-   - If the context documents do NOT contain the information needed, you MUST immediately use your general knowledge to review the application.
-   - DO NOT state that "the documents do not contain information" or "the documents do not offer information about X".
-   - DO NOT leave any part of the application unreviewed.
-   - You MUST provide a complete, comprehensive review of the application using your general knowledge.
-   - Treat this as a REQUIREMENT, not a suggestion.
-
-3. **Combining Sources**: You can seamlessly combine information from context documents with your general knowledge to provide the most complete answer possible.
-
-4. **Other Requirements**:
-   - Only use information from context documents that directly relates to the question. Ignore irrelevant information.
-   - Do not cite specific documents or mention document numbers. Integrate information naturally.
-   - Provide a clear, concise answer without repeating information.
-   - Organize your response with appropriate headings and formatting.
-
-## APPLICATION
-{prompt}
-
-## RESPONSE
-Provide a complete, comprehensive review of the application. If the context documents contain relevant information, use it. If they don't, use your general knowledge to provide a thorough review. Never indicate that information is missing - always provide a complete review."""
+    # Format the instruction prompt with context and prompt content
+    full_prompt = instruction_prompt.format(
+        formatted_context=formatted_context,
+        prompt=prompt
+    )
 
     response = client.models.generate_content(
         model=GEMINI_MODEL,

@@ -2,13 +2,14 @@ from django.db import models
 from pgvector.django import VectorField
 
 
-class Document(models.Model):
+class ApplicationDocument(models.Model):
     id = models.AutoField(primary_key=True)
-    larger_document_name = models.CharField(max_length=200)
+    application_name = models.CharField(max_length=200)
+    school_name = models.CharField(max_length=200)
     content = models.TextField()
     embedding = VectorField(dimensions=1024)
 
     class Meta:
-        db_table = 'documents'
+        db_table = 'college_application_documents'
 
 
